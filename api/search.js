@@ -2,7 +2,7 @@
 // API KEYS - Authorized Keys
 // ============================================
 const VALID_API_KEYS = [
-  'ABHAY_SINGH_KEY_2024',
+  'ABHAY_SINGH_KEY_2026',
   'DEMO_KEY_123', 
   'TEST_KEY_456',
   'OSINT_MASTER_KEY'
