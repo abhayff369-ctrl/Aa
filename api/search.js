@@ -1,5 +1,5 @@
 // ============================================
-// API KEYS - Sirf authorized log hi use kar sakte hain
+// API KEYS - Authorized Keys
 // ============================================
 const VALID_API_KEYS = [
   'ABHAY_SINGH_KEY_2024',
@@ -9,7 +9,7 @@ const VALID_API_KEYS = [
 ];
 
 // ============================================
-// API Key Check Function
+// API Key Validation
 // ============================================
 function isValidApiKey(apiKey) {
   return VALID_API_KEYS.includes(apiKey);
@@ -19,12 +19,11 @@ function isValidApiKey(apiKey) {
 // MAIN API HANDLER
 // ============================================
 export default async function handler(req, res) {
-  // CORS Headers - Sabko access allowed
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
   
-  // OPTIONS request handle
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -37,16 +36,18 @@ export default async function handler(req, res) {
   if (!apiKey) {
     return res.status(401).json({
       success: false,
-      error: '⚠️ API Key Required',
-      message: 'Please provide API key in header: X-API-Key or query: ?api_key=YOUR_KEY'
+      error: 'API Key Required',
+      message: 'Please provide API key in header: X-API-Key or query: ?api_key=YOUR_KEY',
+      developer: 'Abhay Singh'
     });
   }
   
   if (!isValidApiKey(apiKey)) {
     return res.status(403).json({
       success: false,
-      error: '❌ Invalid API Key',
-      message: 'The API key you provided is not valid'
+      error: 'Invalid API Key',
+      message: 'The API key you provided is not valid',
+      developer: 'Abhay Singh'
     });
   }
 
@@ -58,22 +59,22 @@ export default async function handler(req, res) {
   if (!q) {
     return res.status(400).json({
       success: false,
-      error: '⚠️ Missing query parameter',
+      error: 'Missing query parameter',
       message: 'Use: /api/search?q=YOUR_QUERY',
-      example: '/api/search?q=8651369225'
+      example: '/api/search?q=8651369225',
+      developer: 'Abhay Singh'
     });
   }
 
   try {
     // ============================================
-    // SOURCE API - Yahan se data scrape hoga
+    // SOURCE API SCRAPE
     // ============================================
     const targetUrl = `https://noneusrxleakosintpro.vercel.app/db/TG-@None_usernam3/@None_usernam3/search=${encodeURIComponent(q)}`;
     
     console.log(`📡 Query: ${q}`);
     console.log(`🕐 Time: ${new Date().toISOString()}`);
     
-    // Fetch data from source
     const response = await fetch(targetUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; OSINT-Bot/1.0)',
@@ -88,13 +89,17 @@ export default async function handler(req, res) {
     const sourceData = await response.json();
     
     // ============================================
-    // SEND RESPONSE - WITHOUT Channel & Developer
+    // EXTRACT DATA - Channel & Developer Remove
     // ============================================
-    // Sirf data extract karo, channel aur developer hatao
     const extractedData = sourceData.data || [];
     
+    // ============================================
+    // FINAL RESPONSE - Sirf Developer: Abhay Singh
+    // ============================================
     res.status(200).json({
       success: true,
+      developer: 'Abhay Singh',
+      developer_contact: 'tg-@darkdeveloper2',
       query: q,
       timestamp: new Date().toISOString(),
       total_results: extractedData.length,
@@ -107,7 +112,8 @@ export default async function handler(req, res) {
       success: false,
       error: 'Internal Server Error',
       message: error.message,
-      query: q
+      query: q,
+      developer: 'Abhay Singh'
     });
   }
 }
