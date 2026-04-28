@@ -1,0 +1,15 @@
+{
+  "name": "osint-api",
+  "version": "1.0.0",
+  "description": "OSINT API by Abhay Singh",
+  "main": "api/search.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "author": "Abhay Singh",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
