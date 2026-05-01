@@ -1,37 +1,58 @@
 // ============================================
-// API KEYS - Authorized Keys
+// API KEYS
 // ============================================
 const VALID_API_KEYS = [
-  'ABHAY_SINGH_KEY_2026',
-  'DEMO_KEY_123', 
+  'ABHAY_SINGH_KEY_2024',
+  'DEMO_KEY_123',
   'TEST_KEY_456',
-  'FULL_ACCESS_VISHAL_BOSS'
+  'OSINT_MASTER_KEY'
 ];
 
-// ============================================
-// API Key Validation
-// ============================================
 function isValidApiKey(apiKey) {
   return VALID_API_KEYS.includes(apiKey);
 }
 
 // ============================================
-// MAIN API HANDLER
+// CLEAN DATA FUNCTION - Remove Channel & Developer lines
+// ============================================
+function cleanData(dataArray) {
+  if (!Array.isArray(dataArray)) return [];
+  
+  // Skip first 3 lines (📢 CHANNEL, 👨‍💻 DEVELOPER, -----------)
+  // Also filter out any line that contains CHANNEL or DEVELOPER
+  return dataArray.filter(item => {
+    if (typeof item !== 'string') return true;
+    
+    const lowerItem = item.toLowerCase();
+    
+    // Remove channel line
+    if (lowerItem.includes('channel:') || lowerItem.includes('📢')) return false;
+    
+    // Remove developer line  
+    if (lowerItem.includes('developer:') || lowerItem.includes('👨‍💻')) return false;
+    
+    // Remove separator line
+    if (lowerItem.includes('---')) return false;
+    
+    return true;
+  });
+}
+
+// ============================================
+// MAIN HANDLER
 // ============================================
 export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // ============================================
-  // API KEY AUTHENTICATION
-  // ============================================
-  const apiKey = req.headers['x-api-key'] || req.headers['authorization'] || req.query.api_key;
+  // API Key Check
+  const apiKey = req.headers['x-api-key'] || req.query.api_key;
   
   if (!apiKey) {
     return res.status(401).json({
@@ -51,30 +72,26 @@ export default async function handler(req, res) {
     });
   }
 
-  // ============================================
-  // QUERY PARAMETER CHECK
-  // ============================================
+  // Query Check
   const { q } = req.query;
   
   if (!q) {
     return res.status(400).json({
       success: false,
-      error: 'Missing query parameter',
-      message: 'Use: /api/search?q=YOUR_QUERY',
-      example: '/api/search?q=8651369225',
+      error: 'Missing query parameter "q"',
+      example: '/api/search?q=QUERY',
       developer: 'Abhay Singh'
     });
   }
 
   try {
-    // ============================================
-    // SOURCE API SCRAPE
-    // ============================================
+    // Source API URL - Scrape from here
     const targetUrl = `https://noneusrxleakosintpro.vercel.app/db/TG-@None_usernam3/@None_usernam3/search=${encodeURIComponent(q)}`;
     
     console.log(`📡 Query: ${q}`);
     console.log(`🕐 Time: ${new Date().toISOString()}`);
     
+    // Fetch from source
     const response = await fetch(targetUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; OSINT-Bot/1.0)',
@@ -88,30 +105,48 @@ export default async function handler(req, res) {
     
     const sourceData = await response.json();
     
-    // ============================================
-    // EXTRACT DATA - Channel & Developer Remove
-    // ============================================
-    const extractedData = sourceData.data || [];
+    // Get raw data array
+    const rawData = sourceData.data || [];
+    
+    // CLEAN THE DATA - Remove channel, developer, separator lines
+    const cleanedData = cleanData(rawData);
+    
+    // Extract only passwords
+    const passwords = cleanedData.filter(item => 
+      typeof item === 'string' && item.toLowerCase().startsWith('password:')
+    );
+    
+    // Extract only emails
+    const emails = cleanedData.filter(item => 
+      typeof item === 'string' && item.toLowerCase().includes('email:')
+    );
     
     // ============================================
-    // FINAL RESPONSE - Sirf Developer: Abhay Singh
+    // FINAL RESPONSE - Clean data only
     // ============================================
     res.status(200).json({
       success: true,
       developer: 'Abhay Singh',
-      developer_contact: 'tg-@darkdeveloper2',
+      contact: '@abhay_singh_official',
       query: q,
       timestamp: new Date().toISOString(),
-      total_results: extractedData.length,
-      data: extractedData
+      statistics: {
+        total_raw: rawData.length,
+        junk_removed: rawData.length - cleanedData.length,
+        total_results: cleanedData.length,
+        password_count: passwords.length,
+        email_count: emails.length
+      },
+      data: cleanedData,
+      passwords: passwords,
+      emails: emails
     });
     
   } catch (error) {
     console.error('❌ Error:', error);
     res.status(500).json({
       success: false,
-      error: 'Internal Server Error',
-      message: error.message,
+      error: error.message,
       query: q,
       developer: 'Abhay Singh'
     });
