@@ -15,11 +15,11 @@
         },
         {
           "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, OPTIONS"
+          "value": "GET, OPTIONS"
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, X-API-Key, Authorization"
+          "value": "Content-Type, X-API-Key"
         }
       ]
     }
