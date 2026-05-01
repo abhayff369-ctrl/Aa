@@ -1,7 +1,7 @@
 {
-  "name": "osint-clean-api",
-  "version": "1.0.0",
-  "description": "OSINT API by Abhay Singh - Channel & Developer Removed",
+  "name": "osint-final-api",
+  "version": "2.0.0",
+  "description": "OSINT API by Abhay Singh - Clean Data",
   "main": "api/search.js",
   "scripts": {
     "dev": "vercel dev",
