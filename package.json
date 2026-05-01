@@ -1,7 +1,7 @@
 {
-  "name": "osint-raw-api",
+  "name": "osint-clean-api",
   "version": "1.0.0",
-  "description": "Raw OSINT API - Returns exact source response",
+  "description": "OSINT API by Abhay Singh - Channel & Developer Removed",
   "main": "api/search.js",
   "scripts": {
     "dev": "vercel dev",
