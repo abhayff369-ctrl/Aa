@@ -12,7 +12,32 @@ function isValidApiKey(apiKey) {
 }
 
 // ============================================
-// MAIN HANDLER - RAW RESPONSE
+// CLEAN FUNCTION - Sirf Channel aur Developer remove karega
+// ============================================
+function removeChannelAndDeveloper(dataArray) {
+  if (!Array.isArray(dataArray)) return [];
+  
+  return dataArray.filter(item => {
+    if (typeof item !== 'string') return true;
+    
+    const lowerItem = item.toLowerCase();
+    
+    // Remove channel line
+    if (lowerItem.includes('channel:') || lowerItem.includes('📢')) return false;
+    
+    // Remove developer line  
+    if (lowerItem.includes('developer:') || lowerItem.includes('👨‍💻')) return false;
+    
+    // Remove separator line
+    if (lowerItem.includes('---')) return false;
+    
+    // Keep everything else (passwords, emails, comments, dates, everything!)
+    return true;
+  });
+}
+
+// ============================================
+// MAIN HANDLER
 // ============================================
 export default async function handler(req, res) {
   // CORS Headers
@@ -31,7 +56,7 @@ export default async function handler(req, res) {
     return res.status(401).json({
       success: false,
       error: 'API Key Required',
-      message: 'Please provide API key in header: X-API-Key',
+      message: 'Please provide API key in header: X-API-Key or query: ?api_key=YOUR_KEY',
       developer: 'Abhay Singh'
     });
   }
@@ -40,6 +65,7 @@ export default async function handler(req, res) {
     return res.status(403).json({
       success: false,
       error: 'Invalid API Key',
+      message: 'The API key you provided is not valid',
       developer: 'Abhay Singh'
     });
   }
@@ -61,7 +87,6 @@ export default async function handler(req, res) {
     const targetUrl = `https://noneusrxleakosintpro.vercel.app/db/TG-@None_usernam3/@None_usernam3/search=${encodeURIComponent(q)}`;
     
     console.log(`📡 Query: ${q}`);
-    console.log(`🔗 URL: ${targetUrl}`);
     console.log(`🕐 Time: ${new Date().toISOString()}`);
     
     // Fetch from source
@@ -72,12 +97,34 @@ export default async function handler(req, res) {
       }
     });
     
-    // Get RAW response from source
+    if (!response.ok) {
+      throw new Error(`Source API returned ${response.status}`);
+    }
+    
     const sourceData = await response.json();
     
+    // Get raw data array
+    const rawData = sourceData.data || [];
+    
+    // REMOVE ONLY CHANNEL & DEVELOPER LINES
+    const cleanedData = removeChannelAndDeveloper(rawData);
+    
+    // Count how many lines removed
+    const removedCount = rawData.length - cleanedData.length;
+    
+    // Extract passwords (optional - helpful for users)
+    const passwords = cleanedData.filter(item => 
+      typeof item === 'string' && item.toLowerCase().startsWith('password:')
+    );
+    
+    // Extract emails (optional - helpful for users)
+    const emails = cleanedData.filter(item => 
+      typeof item === 'string' && 
+      (item.toLowerCase().includes('email:') || item.toLowerCase().includes('@gmail'))
+    );
+    
     // ============================================
-    // SEND EXACT SOURCE RESPONSE
-    // Jo bhi source se aaya, wahi bhej rahe hain
+    // FINAL RESPONSE - Clean data only
     // ============================================
     res.status(200).json({
       success: true,
@@ -85,11 +132,16 @@ export default async function handler(req, res) {
       contact: '@abhay_singh_official',
       query: q,
       timestamp: new Date().toISOString(),
-      
-      // EXACT SOURCE RESPONSE - BILKUL WAISA KA WAISA
-      source_url: targetUrl,
-      source_status: response.status,
-      source_data: sourceData
+      statistics: {
+        total_raw: rawData.length,
+        channel_dev_removed: removedCount,
+        total_results: cleanedData.length,
+        password_count: passwords.length,
+        email_count: emails.length
+      },
+      data: cleanedData,
+      passwords: passwords,
+      emails: emails
     });
     
   } catch (error) {
@@ -98,8 +150,7 @@ export default async function handler(req, res) {
       success: false,
       error: error.message,
       query: q,
-      developer: 'Abhay Singh',
-      timestamp: new Date().toISOString()
+      developer: 'Abhay Singh'
     });
   }
 }
