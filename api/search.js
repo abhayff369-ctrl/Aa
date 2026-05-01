@@ -4,7 +4,7 @@
 const VALID_API_KEYS = [
   'ABHAY_SINGH_KEY_2024',
   'DEMO_KEY_123',
-  'TEST_KEY_456'
+  'FULL_ACCESS_VISHAL_BOSS'
 ];
 
 function isValidApiKey(apiKey) {
